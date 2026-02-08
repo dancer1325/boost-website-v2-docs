@@ -1,0 +1,466 @@
+* goal
+  * Boost documentation
+
+* Boost documentation
+  * -- based on -- [Antora](#antora)
+  * [contributor guide](contributor-guide/modules/ROOT/nav.adoc)
+  * [formal reviews](formal-reviews/modules/ROOT/nav.adoc)
+  * [release notes](release-notes)
+  * [user guide](user-guide/modules/ROOT/nav.adoc)
+
+#  Antora Guide
+
+* [Antora](https://antora.org/[Antora] is)
+* [UI](antora-ui)
+
+##  Antora
+
+* TODO:  a static site generator designed for creating documentation sites from AsciiDoc content.
+The tool renders the documentation for Boost modules whose documentation are defined as components in the Antora playbook.
+
+##  Installing Antora
+
+###  Dependencies
+
+Antora requires https://nodejs.org[Node.js,window=_blank]:
+
+[source,bash]
+----
+$ node -v
+----
+
+This command should return the Node.js version number:
+
+[source,console]
+----
+v16.18.0
+----
+
+Antora requires Node.js version 16 or later.
+If you have Node.js installed but need to upgrade it:
+
+[source,bash]
+----
+$ nvm install --lts
+----
+
+The following instructions also require https://git-scm.com/[Git,window=_blank] to clone the repository:
+
+[source,bash]
+----
+$ git --version
+----
+
+This command should return the Git version number:
+
+[source,console]
+----
+git version 2.25.1
+----
+
+###  Cloning the repository
+
+To clone the repository that defines the Antora playbook for the Boost documentation:
+
+[source,bash]
+----
+$ git clone https://www.github.com/boostorg/website-v2-docs
+----
+
+This command clones the repository into a directory named `website-v2-docs`.
+This directory contains the Antora playbook files `site.playbook.yml` (website documentation) and `libs.playbook.yml` (library documentation).
+
+[[running-antora]]
+###  Running Antora
+
+After cloning the project, you need to install its dependencies using the Node.js package manager, npm:
+
+[source,bash]
+----
+$ npm ci
+----
+
+Then build the Antora UI bundle used for the documentation:
+
+[source,bash]
+----
+$ cd antora-ui
+$ npx gulp
+$ cd ..
+----
+
+The `npx` command, which comes with npm, can be used to build any of the playbooks in the repository.
+
+[source,bash]
+----
+$ npx antora --fetch libs.playbook.yml
+----
+
+Or to build the website documentation:
+
+[source,bash]
+----
+$ npx antora --fetch site.playbook.yml
+----
+
+This commands will build the documentation in the `build/` directory.
+
+`npx` will download the Antora CLI and the Antora site generator, and then run the `antora` command with the specified playbook.
+These dependencies are cached locally, so the next time you run `npx antora`, it will be faster.
+
+In the release process, Antora is called with extra attributes used by the documentation components.
+For instance:
+
+[source,bash]
+----
+$ npx antora --fetch --attribute page-boost-branch=master --attribute page-boost-ui-branch=master --attribute page-commit-id=151c2ac libs.playbook.yml
+----
+
+[IMPORTANT]
+Instead of using the Antora versioning control system, we render the documentation for a single version by setting `version: ~` in the `antora.yml` file.
+The `--attribute` options let us render the playbook for a single documentation version with context about the current version.
+
+
+The `libdoc.sh` script simplifies the process by building the UI bundle, identifying these attributes, and running the Antora command with the specified playbook.
+
+[source,bash]
+----
+$ ./libdoc.sh master
+----
+
+Or to build the website documentation:
+
+[source,bash]
+----
+$ ./sitedoc.sh master
+----
+
+[source,console]
+----
+Site generation complete!
+Open file:///home/user/path/to/antora/build/master/doc in a browser to view your site.
+Site generation complete!
+Open file:///home/user/path/to/antora/build/doc in a browser to view your site.
+----
+
+The `build.sh` script identifies the branch of the current repository and runs the `sitedoc.sh` script with the branch name as an argument:
+
+[source,bash]
+----
+$ ./build.sh
+----
+
+Although not necessary, you also have the option of installing Antora globally so that the antora command is available on your `PATH`.
+
+[source,bash]
+----
+$ npm i -g @antora/cli @antora/site-generator
+----
+
+[source,bash]
+----
+$ antora -v
+----
+
+Read more about antora on their https://docs.antora.org/antora/latest/install-and-run-quickstart/[Quickstart guide,window=_blank].
+
+##  Playbook Components
+
+The website is composed of components defined in the `content.sources` field of its playbook file
+`site.playbook.yml`.
+All components of the website are relative to the website-v2-docs repository.
+
+The process for generating the documentation for all libraries is similar.
+However, the components are defined in the `libs.playbook.yml` file and their URLs are relative to the `boostorg` organization.
+Each library documentation is defined as a component in the playbook file `libs.playbook.yml`:
+
+[source,yml]
+----
+content:
+  sources:
+    - url: https://github.com/boostorg/url
+      start_path: doc
+  # ...
+----
+
+The complete `libdoc.sh` command syntax is:
+
+[source,console]
+----
+Usage: ./libdoc.sh { branch | version | 'release' | 'all' }...
+
+    branch : 'develop' | 'master' | 'release'
+    version: [0-9]+ '.' [0-9]+ '.' [0-9]+
+    'release': builds master to build/doc/html
+    'all': rebuilds develop, master, and every version
+
+Examples:
+
+    ./libdoc.sh develop master      # build develop and master
+    ./libdoc.sh 1.83.0              # build tagged version boost-1.83.0
+----
+
+The first positional argument is the only parameter, which identifies which version should be built.
+
+* `branch`: valid arguments are `master` or `develop`.
+Builds the `master` or `develop` versions of the documentation in `build/master/libs` or `build/develop/libs`.
+It checks out all libraries in their `master` or `develop` branches.
+* `version`: a semver version, such as `1.82.0` describing a Boost version.
+This allows us to generate the documentation content of an old Boost version with the current version of the Antora UI.
+* `'release'`: generate the `master` version to `build/doc/html` with the `release` UI layout.
+This layout omits the header, Google analytics, and Edit this Page.
+This version of the documentation is meant to be distributed with sources files in the Boost release.
+* `'all'`: retroactively iterate and generate the documentation for all versions of Boost
+with the most recent Antora UI. This command iterates each playbook in the `history` directory.
+
+The master/develop branches of the library documentation are designed to co-exist alongside the per-release documentation and thus the branch name (or release version) does appear in its URLs.
+
+##  Component Layout
+
+Each Antora-enabled library includes the https://docs.antora.org/antora/latest/organize-content-files/[component version descriptor file] `doc/antora.yml`.
+Each library should contain an `antora.yml` describing the component.
+For instance,
+
+[source,yml]
+----
+name: mp11
+title: Boost.Mp11
+version: ~
+nav:
+  - modules/ROOT/nav.adoc
+----
+
+After defining the `doc/antora.yml` file, the source files should be organized in the `modules` directory.
+Typically, `doc/modules/ROOT/nav.adoc` is the main navigation file for the library documentation and `doc/modules/ROOT/pages/index.adoc` is the main page.
+You can find more information about the https://docs.antora.org/antora/latest/component-version-descriptor/[Component Version Descriptor,window=_blank] and https://docs.antora.org/antora/latest/page/[Pages,window=_blank] in the Antora documentation.
+
+Once these files are in place, the library can be registered as a component in the `libs.playbook.yml` file with a Pull Request to the `website-v2-docs` repository:
+
+[source,yml]
+----
+content:
+  sources:
+  # ...
+    - <library-name>: https://github.com/boostorg/<library-name>
+      start_path: doc
+----
+
+##  Local playbooks
+
+When working locally on an individual component, it's usually desirable to create a local playbook for your project so that you can render the documentation locally for a single component.
+The local playbook is a copy of the main playbook that removes all components except the one you are working on.
+
+For instance, you can create a copy of `libs.playbook.yml` as `doc/local-playbook.yml`, remove all components except the one you are working on, and adjust the component URL to point to your local filesystem:
+
+[source,yml]
+----
+# ...
+content:
+  sources:
+    - url: ..
+      start_path: doc
+      edit_url: 'https://github.com/boostorg/<library-name>/edit/{refname}/{path}'
+# ...
+----
+
+This way, you can render the documentation locally for your component without having to render the entire Boost documentation:
+
+[source,bash]
+----
+$ npx antora --fetch local-playbook.yml
+----
+
+When writing a Boost library proposal, include your library in this local playbook.
+
+##  Antora Extensions
+
+// Antora provides an event-based extension facility you can tap into to augment or influence the functionality of the generator
+
+Antora supports https://docs.antora.org/antora/latest/extend/extensions/[extensions,window=_blank] that can be used to augment the functionality of the generator.
+The playbooks in the `website-v2-docs` repository include a number of extensions that are available to all components.
+
+###  {cpp} Tagfiles Extension
+
+The https://www.npmjs.com/package/@cppalliance/antora-cpp-tagfiles-extension[@cppalliance/antora-cpp-tagfiles-extension,window=_blank] extension allows components to include links to {cpp} symbols defined in the library or external libraries.
+
+For instance, `cpp:std::string[]` will generate a link to the `std::string` symbol in the documentation.
+Note that after the `cpp:` prefix from custom inline macros, the syntax is similar to the one used to generate regular links in AsciiDoc, where the link is replaced by the symbol name.
+
+The link for each symbol is generated from a tagfile provided by the main playbook or by the extension.
+The playbook can define tagfiles for other libraries by including the `cpp-tagfiles` field in the extension configuration:
+
+[source,yml]
+----
+antora:
+  extensions:
+    # ...
+    - require: '@cppalliance/antora-cpp-tagfiles-extension'
+      cpp-tagfiles:
+        files:
+          - file: ./doc/tagfiles/boost-url-doxygen.tag.xml
+            base_url: 'xref:reference:'
+          - file: ./doc/tagfiles/boost-system-doxygen.tag.xml
+            base_url: https://www.boost.org/doc/libs/master/libs/system/doc/html/
+        using-namespaces:
+          - 'boost::'
+    # ...
+----
+
+Note that the `files` field is a list of tagfiles that are used to generate links to symbols in the documentation.
+These tagfiles can be generated by other tools like Doxygen or MrDocs.
+In some cases, users might want to write their own tagfiles to include symbols from other libraries.
+As tagfiles only describe relative links to symbols, the `base_url` field is used to generate the full URL to the symbol.
+
+Also note the `using-namespaces` field, which is a list of namespaces that are used to generate links to symbols in the documentation.
+In the example above, `cpp:small_vector[]` will generate a link to the `boost::small_vector` symbol in the documentation unless there's a tagfile that defines a symbol with the same name in the global namespace.
+
+Each component can also define its own tagfiles by including the `cpp-tagfiles` field in the component descriptor file:
+
+[source,yml]
+----
+ext:
+  cpp-tagfiles:
+      files:
+        - file: ./doc/tagfiles/boost-url-doxygen.tag.xml
+          base_url: 'xref:reference:'
+        - file: ./doc/tagfiles/boost-system-doxygen.tag.xml
+          base_url: https://www.boost.org/doc/libs/master/libs/system/doc/html/
+        - file: ./doc/tagfiles/boost-core-doxygen.tag.xml
+          base_url: https://www.boost.org/doc/libs/master/libs/core/doc/html/
+        - file: ./doc/tagfiles/boost-filesystem-doxygen.tag.xml
+          base_url: https://www.boost.org/doc/libs/master/libs/filesystem/doc/
+      using-namespaces:
+        - boost::urls
+        - boost::urls::grammar
+        - boost::system
+        - boost::core
+----
+
+Files and namespaces defined in components are only applied to that component.
+
+More information about the extension can be found in https://github.com/cppalliance/antora-cpp-tagfiles-extension[its repository,window=_blank] and issues should be reported in https://github.com/cppalliance/antora-cpp-tagfiles-extension/issues[its issue tracker,window=_blank].
+
+###  {cpp} Reference Extension
+
+The https://www.npmjs.com/package/@cppalliance/antora-cpp-reference-extension[@cppalliance/antora-cpp-reference-extension,window=_blank] extension generates reference documentation for {cpp} symbols in your codebase and creates an Antora module with its pages.
+The asciidoc documentation pages are generated with MrDocs and populated in the `reference` Antora module.
+
+This means, the generated reference pages can be linked in your `doc/modules/ROOT/nav.adoc` file as:
+
+[source,adoc]
+----
+// ...
+* Reference
+** xref:reference:index.adoc[]
+// ...
+----
+
+To enable the extension for your component, include the extension configuration in the `antora.yml` file:
+
+[source,yml]
+----
+# ...
+ext:
+  cpp-reference:
+    config: doc/mrdocs.yml
+# ...
+----
+
+The `mrdocs.yml` file will typically include parameters to generate a `compile_commands.json` file used to generate the reference documentation.
+For more information about MrDocs and configuration files, see https://www.mrdocs.com/docs[window=_blank].
+
+The process to generate `compile_commands.json` typically depends on third-party libraries used to compile the project.
+In the case of Boost libraries, other Boost libraries should be available to the command that generates the `compile_commands.json` file.
+The dependencies available to components are defined in the `libs.playbook.yml` file.
+
+[source,yml]
+----
+antora:
+  extensions:
+    - require: '@cppalliance/antora-cpp-reference-extension'
+      dependencies:
+        - name: 'boost'
+          repo: 'https://github.com/boostorg/boost.git'
+          tag: 'develop'
+          variable: 'BOOST_SRC_DIR'
+          system-env: 'BOOST_SRC_DIR'
+----
+
+The extension will download each dependency defined in this list and expose it to the MrDocs environment via the environment variable defined in `variable`.
+If the library is already available in the system, the `system-env` field can be used to expose it to Antora, so it uses this existing path instead of downloading the library.
+
+More information about the extension can be found in https://github.com/cppalliance/antora-cpp-reference-extension[its repository,window=_blank] and issues should be reported in https://github.com/cppalliance/antora-cpp-reference-extension/issues[its issue tracker,window=_blank].
+
+###  Boost Links Extension
+
+The https://www.npmjs.com/package/@cppalliance/asciidoctor-boost-links[@cppalliance/asciidoctor-boost-links,window=_blank] extension allows component pages to include links to Boost libraries and tools.
+For instance:
+
+[source,asciidoc]
+----
+boost:core[]
+----
+
+This will render as if the equivalent AsciiDoc code was used:
+
+[source,asciidoc]
+----
+https://www.boost.org/libs/core[Boost.Core]
+----
+
+When processed by Asciidoc, this renders as "https://www.boost.org/libs/core[Boost.Core]":
+
+[source,html]
+----
+<a href="https://www.boost.org/libs/core">Boost.Core</a>
+----
+
+The extension supports Boost libraries and tools.
+When no custom text is provided, the extension will use the library name in `PascalCase` as the link text.
+When a Boost author has a preference for a different default link text, these are implemented directly in the extension.
+
+More information about the extension can be found in https://github.com/cppalliance/asciidoctor-boost-links[its repository,window=_blank] and issues should be reported in https://github.com/cppalliance/asciidoctor-boost-links/issues[its issue tracker,window=_blank].
+
+###  Playbook Macros Extension
+
+The https://www.npmjs.com/package/@cppalliance/antora-playbook-macros-extension[@cppalliance/antora-playbook-macros-extension,window=_blank] extension allows playbooks to include macros that can be used to generate content in the playbook.
+Each macro has a default value that can be overridden with environment variables, the Antora `--attribute` command line option, or directly in the playbook with the `asciidoc.attributes` field.
+
+The macro is used to implement the branch functionality described in section <<running-antora>>.
+More information about the extension can be found in https://github.com/cppalliance/antora-playbook-macros-extension[its repository,window=_blank] and issues should be reported in https://github.com/cppalliance/antora-playbook-macros-extension/issues[its issue tracker,window=_blank].
+
+##  [Antora UI Bundle](antora-ui)
+
+Each Antora playbook includes a UI bundle that defines the layout of the documentation.
+
+[source,yaml]
+----
+ui:
+  bundle:
+    url: ./antora-ui/build/ui-bundle.zip
+    snapshot: true
+----
+
+This provides a consistent layout across all components of the playbook.
+
+The bundle includes a few options to customize the Boost UI by setting the following options in the main playbook:
+
+[source,yaml]
+----
+asciidoc:
+  attributes:
+    # Enable pagination
+    page-pagination: ''
+    # Remove the sidenav and include TOC in index.adoc page
+    remove-sidenav: ''
+    # Include the contents panel with the TOC for the current page
+    page-toc: ''
+----
+
+By default, all options are disabled.
+Setting the options to any string (including the empty string) enables it.
+This is a convention used by Antora to enable/disable options in bundles.
+
+The settings defined in the playbook apply to all documentation components.
+
+The UI bundle documentation is available in the `antora-ui/README.adoc` file. This file describes the structure of the UI bundle and how to customize it.
