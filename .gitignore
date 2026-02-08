@@ -2,3 +2,4 @@ build
 temp/
 local.*
 node_modules/
+/.idea
