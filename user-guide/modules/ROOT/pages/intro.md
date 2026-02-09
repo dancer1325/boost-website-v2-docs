@@ -1,21 +1,19 @@
-= Introduction
+# Introduction
 
 * [Boost](https://github.com/dancer1325/boost-website-v2/blob/develop/templates/homepage.md)
 
-== Advantages of using Boost
+## Advantages of using Boost
 
 * TODO: 
 [disc]
-* Boost allows for cross-platform development, with single source code. Boost supports Windows, Linux variants, Apple OS X, IOS, Android, and Xbox.
-* The Boost Libraries are designed to be as independent as possible so that users can pick and choose the libraries they need without being forced to include unnecessary code. If a library has dependencies these other libraries are loaded automatically if just a subset of the full collection of libraries is being installed.
-* Particular strengths of the libraries include extensive documentation, ease of installing and updating, many libraries are header-only, and that less-common use cases are often covered.
+
 * Through _template metaprogramming_ Boost libraries are a good platform for building other libraries.
 * Boost can be used in conjunction with graphics and games SDKs, such as OpenGL, Vulkan,  and DirectX, and with game development engines such as the Unreal Engine.
 * It is easy to ask questions and share your Boost experiences with other programmers, via the xref:user-community-introduction.adoc[User Community].
 * A developer can gain knowledge of what is available. A library may be of no current use, but knowledge of its existence can help in future awareness and planning.
 * Bugs, though rare, and other issues can be filed on the library authors, refer to xref:reporting-issues.adoc[].
 
-== Considerations when using Boost
+## Considerations when using Boost
 
 The libraries implement a modern approach to pass:[C++] programming, generally prioritizing performance, correctness, cross-platform portability, efficiency and reusability. Boost offers building blocks, rather than a high-level app framework.
 
@@ -23,7 +21,7 @@ Boost is template-heavy, in order to provide maximum portability and reusability
 
 Boost libraries are written by one, or a small team, of independent developers. There will be minor differences in portability, standards, documentation, error reporting, and other aspects, between the libraries. The stringent review process does help minimize these differences.
 
-== Library Categories
+## Library Categories
 
 The current Boost libraries are categorized as follows - the count shows the number of current libraries in the category.
 
@@ -59,9 +57,6 @@ The current Boost libraries are categorized as follows - the count shows the num
 Note:: One library may appear in more than one category.
 
 
-== Summary
+## Summary
 
 The purpose of the Boost libraries is to evangelize and support pass:[C++] development
-You can take advantage of thousands of lines of high performance code.
-
-
