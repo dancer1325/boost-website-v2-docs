@@ -268,10 +268,19 @@ cmake --build . --target install
 
 ### Individual Modules (== subset of Boot libraries)
 
+* allows
+  * ONLY installing the dependencies / you require -- check [Boost Dependency Report](https://pdimov.github.io/boostdep-report/) -- 
 * use cases
   * | CI Systems
 
 * requirements
+  * know your target libraries' dependencies
+    * _primary dependencies_
+      * := libraries / DIRECTLY referenced -- by -- your target library
+    * _secondary dependencies_ 
+      * := libraries /
+        * NOT referenced -- by -- your target library
+        * referenced -- by the -- primary OR other secondary libraries
   * git
   * python
 
@@ -307,210 +316,47 @@ CMake integration will work fine even if you install Boost with https://www.bfgr
 
 ## Environment variables
 
-We recommend you update your environment variables after installing Boost.
-When you update your environment variables, you are telling your operating system and other tools where to look for the Boost libraries and headers.
+* recommendations
+  * AFTER installing Boost, update your environment variables
+* allows
+  * specifying where to look for the Boost libraries & headers 
 
-[tabs,sync-group-id=os]
-====
-Windows::
-+
---
+### | Windows
+* steps
+  * `set BOOST_ROOT=prefixAtBootstrap`
+    * == root directory of the Boost
+    * `prefixAtBootstrap`
+      * by default, `C:\boost`
 
-[source]
-----
-set BOOST_ROOT=C:\boost <1>
-----
+### | Linux
+* steps
+  * | your "~/.bashrc" OR "~/.profile"
+    ```bash
+    export BOOST_ROOT=prefixAtBootstrap
+    # root directory of the Boost
+    #   by default, /usr/local  
+    #       export BOOST_ROOT=/usr/local
+    
+    export LD_LIBRARY_PATH=prefixAtBootstrap/lib:$LD_LIBRARY_PATH
+    # | execute a program, ADDITIONAL directories -- to -- search for shared libraries
+    #   by default, export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH  
+    
+    export CPLUS_INCLUDE_PATH=prefixAtBootstrap/include:$CPLUS_INCLUDE_PATH
+    # ADDITIONAL directories -- to -- search for C++ libraries
+    #   by default, CPLUS_INCLUDE_PATH=/usr/local/include:$CPLUS_INCLUDE_PATH 
+    ```
 
-<1> Specify the root directory of the Boost pass:[C++] libraries so other tools can find it
-
-IMPORTANT: Replace `C:\boost` with the prefix directory you specified during the installation, if different.
-
---
-
-Linux::
-+
---
-
-[source,bash]
-----
-export BOOST_ROOT=/usr/local <1>
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH <2>
-export CPLUS_INCLUDE_PATH=/usr/local/include:$CPLUS_INCLUDE_PATH <3>
-----
-
-<1> Specify the root directory of the Boost pass:[C++] libraries so other tools can find it
-<2> Specify additional directories to search for shared libraries when executing a program
-<3> Specify additional directories to search for pass:[C++] header files
-
-IMPORTANT: Replace `/usr/local` with the prefix directory you specified during the installation, if different.
-
-You can add these `export` commands to your `~/.bashrc` or `~/.profile` file to make the changes permanent.
-
---
-
-macOS::
-+
---
-
-[source,bash]
-----
-export BOOST_ROOT=/usr/local <1>
-----
-
-<1> Specify the root directory of the Boost pass:[C++] libraries so other tools can find it
-
-IMPORTANT: Replace `/usr/local` with the prefix directory you specified during the installation, if different.
-
-You can add these `export` commands to your `~/.bashrc` or `~/.profile` file to make the changes permanent.
-
-## Your First App
-
-=== Compiled Libraries
-
-In this section, we will locate an example from GitHub, and then build and run a project based on the example.
-
-For most Boost libraries, there is an `example` sub-folder containing a range of examples.
-For this guide, we will locate an example that reads a JSON file, and pretty-prints its contents.
-
-Copy all the code from https://github.com/boostorg/json/blob/develop/example/pretty.cpp[`json/example/pretty.cpp`,window="_blank"] into your `example.cpp`.
-Let's compile it:
-
-[tabs,sync-group-id=build]
-========
-CMake::
-+
---
-Edit the contents of `CMakeLists.txt`:
-
-[source,cmake]
-.CMakeLists.txt
-----
-cmake_minimum_required(VERSION 3.8...3.31)
-project(MyProject)
-
-find_package(Boost REQUIRED COMPONENTS json)
-add_executable(MyProject main.cpp)
-target_link_libraries(MyProject Boost::json)
-----
-
-In this example, we explicitly require `json` as boost:json[] is a compiled library.
-Compiled libraries need to be explicitly required and linked separately.
-
-Run the commands for the usual CMake workflow once more to build the executable.
-
-NOTE: Note how the difference between header-only and compiled libraries is transparent when using a build system.
---
-
-Visual Studio::
-+
---
-. Create a new Visual Studio pass:[C++] Console App.
-Name it JsonPrint.
-. Update both the additional include directories, and additional library directories, as you did for the previous section.
-. Copy all the code from https://github.com/boostorg/json/blob/develop/example/pretty.cpp, and use it to replace all the default content of the project's cpp file.
-
-You can already run your example from Visual Studio:
-
-. Search your computer for any JSON file, unless you have one you would like to use already.
-Record the full path to that file.
-
-. In Visual Studio, locate and select *Build Solution*.
-
-You should get neatly formatted output:
-
-image:json-example-running.png[]
-
-[circle]
-* If your JSON included symbols such as the umlaut, these will not be rendered correctly unless you change the format of your Command Prompt to UTF-8. By default, a Command Prompt supports a code page numbered 437. To change the code page to UTF-8, type `chcp 65001`.
-
-* If you get compile errors such as `cannot open file 'libboost_json-vc143-mt-gd-x64-1_81.lib'` you have probably not entered the *Additional Library Directories* correctly.
---
-
-By Hand::
-+
---
-Repeat the instructions to read the compile the executable:
-
-In the directory where you saved `example.cpp`, issue the following command:
-
-Visual Studio Compiler:
-
-[source,none,subs="attributes+"]
-----
-cl /I C:\boost\include /link C:\boost\lib\libboost_json-vc71-mt-d-x86-1_34.lib example.cpp
-----
-
-GCC:
-
-[source,none,subs="attributes+"]
-----
-g++ -I /usr/local/include example.cpp -L /usr/local/libboost_json.a -o example
-----
-
-Clang:
-
-[source,none,subs="attributes+"]
-----
-clang++ -I /usr/local/include example.cpp -L /usr/local/lib -l boost_json -o example
-----
-
-NOTE: Replace `C:\boost` or `/usr/local` with your Boost installation prefix if necessary.
-
-As boost:json[] is a compiled library, we need the linker option in our example.
-The name of the library file might vary according to your architecture and the options provided to `b2` while installing boost.
-Check the `lib` in your installation prefix.
---
-========
-
-Search your computer for any JSON file, unless you have one you would like to use already.
-Record the full path to that file and run the example with:
-
-[tabs,sync-group-id=os]
-====
-Windows::
-+
---
-[source]
-----
-example "path/to/json/file.json"
-----
---
-
-Linux::
-+
---
-[source]
-----
-./example "path/to/json/file.json"
-----
---
-
-macOS::
-+
---
-[source]
-----
-./example "path/to/json/file.json"
-----
---
-====
-
-Did you get the expected result?
+### | macOS
+* steps
+  * | your "~/.bashrc" OR "~/.profile"
+    ```bash
+    export BOOST_ROOT=prefixAtBootstrap
+    # root directory of the Boost
+    #   by default, /usr/local  
+    #       export BOOST_ROOT=/usr/local
+    ```
 
 # [B2](https://www.bfgroup.xyz/b2/)
 * == custom build app
   * allows
     * building the Boost libraries
-
-
-
-=== Summary
-
-Although the samples you have now built and run are quite simple, if you have got this far successfully, it means your build, installation and project linking are all working correctly.
-Great job!
-
-=== Next Steps
-
-You might like to scan the examples folders of some of the other libraries that you are interested in, and create and run projects to get them running.
-
-Once you are more experienced with Boost, you might like to build and install only those libraries you require. To this end, it can be helpful to know the _dependencies_ that your target libraries have. This includes both _primary dependencies_ (the libraries directly referenced by your target library) and _secondary dependencies_ (the libraries not referenced by your target library, but referenced by the primary or other secondary libraries). To aid you in determining this information, refer to the https://pdimov.github.io/boostdep-report/[Boost Dependency Report]. This report is updated with each public release of Boost.
