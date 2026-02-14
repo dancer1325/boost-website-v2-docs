@@ -2,12 +2,15 @@
   * build & run a project -- based on -- Github example
     * [example.cpp](example.cpp)  == [pretty.cpp](https://github.com/boostorg/json/blob/develop/example/pretty.cpp)
       * reads a JSON file + pretty-prints its contents
+    * [file.hpp](https://github.com/boostorg/json/blob/develop/example/file.hpp)
 
 * vs header-only library
   * | compilation, 
     * link with the compiled library
 
 # how to compile?
+## -- via -- B2
+* TODO: 
 ## -- via -- CMake
 * steps
   * configure [CMake](https://cmake.org/)
@@ -32,12 +35,13 @@
       ```bash
       cmake -S . -B build -D BOOST_ROOT=path/to/yourBoostRelease
       # if you use default location (==/usr/local)  -> run `cmake -S . -B build -D BOOST_ROOT=/usr/local`    OR    `cmake -S . -B build`
+      
       cmake --build build
       ```
     * Problems:
       * Problem1: "example.cpp:21:10: fatal error: 'file.hpp' file not found"
-        * Solution: TODO:
-  * check the resulting executable | "build/"
+        * Solution: add missing [file.hpp](https://github.com/boostorg/json/blob/develop/example/file.hpp)
+  * check the resulting executable | "build/MyProject"
 
 ## -- via -- Visual Studio
 * TODO:
@@ -77,14 +81,13 @@ image:json-example-running.png[]
 # how to run?
 ## | Windows
 * steps
-  * `example "path/to/json/file.json"`
-  * TODO:
+  * `.\build\MyProject test.json`
+    * return the .json / prettified
 ## | Linux
 * steps
-  * `./example "path/to/json/file.json"`
-  * TODO:
+  * `./build/MyProject test.json`
+    * return the .json / prettified
 ## | MacOs
 * steps
-  * `./example "path/to/json/file.json"`
-  * TODO:
-
+  * `./build/MyProject test.json`
+    * return the .json / prettified

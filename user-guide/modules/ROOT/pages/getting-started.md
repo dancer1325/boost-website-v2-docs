@@ -51,7 +51,7 @@
 
 ### -- via -- package manager
 * pros
-  * ALREADY ALL pre-compiled 
+  * 👀ALREADY ALL pre-compiled 👀
 * cons
   * lack of control | installation process
   * version conflicts
@@ -147,7 +147,7 @@ brew list boost
     * vs -- via -- package manager
     * ADDITIONAL step
 
-#### Download Boost
+#### ways to download Boost
 ##### -- via -- [B2](https://www.bfgroup.xyz/b2/)
 * recommended one
   * Reason: official supported build system / used -- by the -- Boost libraries 
@@ -209,7 +209,7 @@ cd {release_basename}
 git submodule update --depth 1 --init --recursive <2>
 ```
 
-#### Bootstrap
+#### ways to compile
 ##### -- via -- B2
 * recommended
 ###### | Windows
